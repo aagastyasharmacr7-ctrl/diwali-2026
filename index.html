@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✨ Happy Diwali 2026</title>
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    height:100vh;
+    overflow:hidden;
+    background:radial-gradient(ellipse at center,#301044,#100719 65%,#05030b);
+    color:white;
+    font-family:Georgia,serif;
+}
+
+canvas {
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+}
+
+#fx { z-index:1; }
+#stars { z-index:2; }
+
+.content {
+    position:relative;
+    z-index:3;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:20px;
+}
+
+.tag {
+    color:#ffce78;
+    letter-spacing:8px;
+    font:12px Arial;
+    margin-bottom:30px;
+    animation:appear 2s ease;
+}
+
+h1 {
+    font-size:clamp(55px,11vw,120px);
+    line-height:1.05;
+    letter-spacing:5px;
+    background:linear-gradient(90deg,#ff9d00,#fff5bd,#ffb000,#fff);
+    background-size:300%;
+    background-clip:text;
+    -webkit-background-clip:text;
+    color:transparent;
+    animation:shine 5s linear infinite;
+    filter:drop-shadow(0 0 25px #ff9500);
+}
+
+.message {
+    margin-top:25px;
+    color:#f9dcb9;
+    font-size:clamp(15px,2vw,21px);
+    line-height:1.9;
+    letter-spacing:1px;
+}
+
+.lamps {
+    display:flex;
+    gap:35px;
+    margin:40px 0;
+    font-size:55px;
+}
+
+.lamps span {
+    animation:flicker 1.1s infinite alternate;
+    filter:drop-shadow(0 0 20px orange);
+}
+
+.lamps span:nth-child(2) { animation-delay:.3s; }
+.lamps span:nth-child(3) { animation-delay:.6s; }
+
+button {
+    padding:17px 38px;
+    border:1px solid #ffe0a0;
+    border-radius:50px;
+    background:linear-gradient(90deg,#ff9700,#ffe08a);
+    color:#351000;
+    font-weight:bold;
+    font-size:15px;
+    letter-spacing:1px;
+    cursor:pointer;
+    box-shadow:0 0 30px #ff9800;
+    transition:.3s;
+}
+
+button:hover {
+    transform:scale(1.1);
+    box-shadow:0 0 50px #ffb000;
+}
+
+footer {
+    position:absolute;
+    bottom:25px;
+    color:#bca4ce;
+    font:11px Arial;
+    letter-spacing:4px;
+}
+
+@keyframes shine {
+    to { background-position:300%; }
+}
+
+@keyframes flicker {
+    to { transform:scale(1.2) rotate(5deg); }
+}
+
+@keyframes appear {
+    from { opacity:0; transform:translateY(20px); }
+    to { opacity:1; transform:translateY(0); }
+}
+</style>
+</head>
+
+<body>
+<canvas id="fx"></canvas>
+<canvas id="stars"></canvas>
+
+<div class="content">
+    <div class="tag">✦ THE FESTIVAL OF LIGHTS ✦</div>
+
+    <h1>HAPPY<br>DIWALI</h1>
+
+    <div class="message">
+        May your life shine brighter than a thousand stars.<br>
+        Wishing you happiness, prosperity and endless joy.
+    </div>
+
+    <div class="lamps">
+        <span>🪔</span>
+        <span>🪔</span>
+        <span>🪔</span>
+    </div>
+
+    <button onclick="celebrate()">✦ LAUNCH FIREWORKS ✦</button>
+
+    <footer>WISHING YOU A JOYFUL DIWALI • 2026</footer>
+</div>
+
+<script>
+const canvas=document.getElementById("fx");
+const ctx=canvas.getContext("2d");
+const sc=document.getElementById("stars");
+const sctx=sc.getContext("2d");
+
+let W,H,rockets=[],sparks=[],stars=[];
+
+function resize(){
+    const dpr=Math.min(devicePixelRatio||1,2);
+    W=innerWidth; H=innerHeight;
+    [canvas,sc].forEach(c=>{
+        c.width=W*dpr;
+        c.height=H*dpr;
+        c.style.width=W+"px";
+        c.style.height=H+"px";
+        c.getContext("2d").setTransform(dpr,0,0,dpr,0,0);
+    });
+}
+onresize=resize;
+resize();
+
+const colors=["#ffca28","#ff3d81","#00e5ff","#b388ff",
+              "#ff9100","#ffffff","#69ff9c"];
+
+class Rocket {
+    constructor(x=Math.random()*W,y=H*0.5){
+        this.x=x;
+        this.y=H;
+        this.target=y;
+        this.color=colors[Math.floor(Math.random()*colors.length)];
+        this.speed=7+Math.random()*3;
+    }
+    update(){
+        this.y-=this.speed;
+        ctx.fillStyle=this.color;
+        ctx.shadowBlur=15;
+        ctx.shadowColor=this.color;
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,3,0,Math.PI*2);
+        ctx.fill();
+        ctx.shadowBlur=0;
+        if(this.y<=this.target){
+            explode(this.x,this.y,this.color);
+            return false;
+        }
+        return true;
+    }
+}
+
+class Spark {
+    constructor(x,y,color,a,s){
+        this.x=x; this.y=y;
+        this.color=color;
+        this.vx=Math.cos(a)*s;
+        this.vy=Math.sin(a)*s;
+        this.alpha=1;
+        this.decay=.009+Math.random()*.012;
+        this.size=1+Math.random()*2;
+    }
+    update(){
+        this.x+=this.vx;
+        this.y+=this.vy;
+        this.vx*=.985;
+        this.vy=this.vy*.985+.045;
+        this.alpha-=this.decay;
+        if(this.alpha<=0)return false;
+
+        ctx.globalAlpha=this.alpha;
+        ctx.fillStyle=this.color;
+        ctx.shadowBlur=12;
+        ctx.shadowColor=this.color;
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+        ctx.fill();
+        ctx.globalAlpha=1;
+        ctx.shadowBlur=0;
+        return true;
+    }
+}
+
+function explode(x,y,color){
+    const n=100+Math.random()*70;
+    for(let i=0;i<n;i++){
+        let a=Math.PI*2*i/n;
+        sparks.push(new Spark(x,y,color,a,1+Math.random()*5));
+    }
+}
+
+function celebrate(){
+    for(let i=0;i<22;i++){
+        setTimeout(()=>{
+            rockets.push(new Rocket(
+                W*(.1+Math.random()*.8),
+                H*(.1+Math.random()*.5)
+            ));
+        },i*100);
+    }
+}
+
+function animate(){
+    ctx.fillStyle="rgba(9,4,18,.20)";
+    ctx.fillRect(0,0,W,H);
+    rockets=rockets.filter(r=>r.update());
+    sparks=sparks.filter(s=>s.update());
+    requestAnimationFrame(animate);
+}
+animate();
+
+setInterval(()=>{
+    if(rockets.length<10)rockets.push(new Rocket());
+},550);
+
+for(let i=0;i<130;i++){
+    stars.push({
+        x:Math.random()*W,
+        y:Math.random()*H,
+        size:Math.random()*2,
+        alpha:Math.random()
+    });
+}
+
+function animateStars(){
+    sctx.clearRect(0,0,W,H);
+    stars.forEach(s=>{
+        s.alpha=Math.max(.1,Math.min(1,s.alpha+(Math.random()-.5)*.08));
+        sctx.fillStyle=`rgba(255,195,100,${s.alpha})`;
+        sctx.beginPath();
+        sctx.arc(s.x,s.y,s.size,0,Math.PI*2);
+        sctx.fill();
+        s.y-=.2;
+        if(s.y<0){s.y=H;s.x=Math.random()*W;}
+    });
+    requestAnimationFrame(animateStars);
+}
+animateStars();
+</script>
+</body>
+</html>
